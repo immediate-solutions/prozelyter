@@ -47,19 +47,23 @@ class WriterWorkflowTest extends TestCase
         Assert::assertEquals(['a', 'b', 'c'], $merged[1]);
     }
 
+    /**
+     * @expectedException \RuntimeException
+     * @expectedExceptionMessage The writer is not started
+     */
     public function testInvalidWorkflow1()
     {
-        $this->expectExceptionMessage('The writer is not started');
-
         $writer = new SimpleWriter();
 
         $writer->writeHeaders(['h1', 'h2', 'h3']);
     }
 
+    /**
+     * @expectedException \RuntimeException
+     * @expectedExceptionMessage The writer is not started
+     */
     public function testInvalidWorkflow2()
     {
-        $this->expectExceptionMessage('The writer is not started');
-
         $writer = new SimpleWriter();
 
         $writer->writeRow([1, 2, 3]);

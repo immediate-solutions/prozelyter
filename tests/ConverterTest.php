@@ -5,8 +5,6 @@ use ImmediateSolutions\Prozelyter\Converter;
 use ImmediateSolutions\Prozelyter\Filter\ContainsFilter;
 use ImmediateSolutions\Prozelyter\Tests\Support\SimpleReader;
 use ImmediateSolutions\Prozelyter\Tests\Support\SimpleWriter;
-use ImmediateSolutions\Prozelyter\Validator\AsciiValidator;
-use ImmediateSolutions\Prozelyter\Validator\RatingValidator;
 use ImmediateSolutions\Prozelyter\Validator\UrlValidator;
 use PHPUnit\Framework\Assert;
 use PHPUnit\Framework\TestCase;
@@ -25,9 +23,12 @@ class ConverterTest extends TestCase
 
         $writer = new SimpleWriter();
 
-        $converter = new Converter($reader, $writer);
+        $converter = new Converter();
 
-        $converter->convert();
+        $converter->addReader('from', $reader);
+        $converter->addWriter('to', $writer);
+
+        $converter->convert('from', 'to');
 
         $merged = $writer->getMerged();
 
@@ -39,23 +40,18 @@ class ConverterTest extends TestCase
     public function testConvertWithValidatorsAndFilters()
     {
         $reader = new SimpleReader(['name', 'url', 'stars', 'description'], [
-            ['Hotel A', 'http://hotel-a.com', '3', 'text a'],
-            ['Hotel B', 'http://hotel-b.com', 10, 'text b'],
-            ['Hotel C', 'http://hotel-c.com', '0', 'text c'],
-            ['Hotel D', 'hotel-c.com', 4, 'text d'],
-            ['Hotel § E', 'https://hotel-e.com', 1, 'text e'],
-
+            ['Hotel A', 'http://hotel-a.com', 3, 'text a'],
+            ['Hotel B', 'http://hotel-b.com', 0, 'text b'],
+            ['Hotel C', 'hotel-c.com', 4, 'text d']
         ]);
 
         $writer = new SimpleWriter();
 
-        $converter = new Converter($reader, $writer);
+        $converter = new Converter();
 
-        $converter->addValidator('name', new AsciiValidator());
         $converter->addValidator('url', new UrlValidator());
-        $converter->addValidator('stars', new RatingValidator());
 
-        $converter->convert();
+        $converter->convert($reader, $writer);
 
         $merged = $writer->getMerged();
 
@@ -63,12 +59,12 @@ class ConverterTest extends TestCase
 
         Assert::assertCount(3, $merged);
 
-        Assert::assertEquals(['Hotel A', 'http://hotel-a.com', '3', 'text a'], $merged[1]);
-        Assert::assertEquals(['Hotel C', 'http://hotel-c.com', '0', 'text c'], $merged[2]);
+        Assert::assertEquals(['Hotel A', 'http://hotel-a.com', 3, 'text a'], $merged[1]);
+        Assert::assertEquals(['Hotel B', 'http://hotel-b.com', 0, 'text b'], $merged[2]);
 
         $converter->addFilter('name', new ContainsFilter('tel a'));
 
-        $converter->convert();
+        $converter->convert($reader, $writer);
 
         $merged = $writer->getMerged();
 

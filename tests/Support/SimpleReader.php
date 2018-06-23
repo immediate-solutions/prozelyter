@@ -42,15 +42,23 @@ class SimpleReader implements ReaderInterface
     }
 
     /**
-     * @return array|\Iterator
+     * @return array
      */
     public function readRow()
     {
-        return $this->data;
+        $row = current($this->data);
+
+        if ($row === false) {
+            return null;
+        }
+
+        next($this->data);
+
+        return $row;
     }
 
     public function stop()
     {
-        //
+        reset($this->data);
     }
 }

@@ -105,6 +105,8 @@ class Converter
             throw new \RuntimeException('Invalid value is provided for "to"');
         }
 
+        $reader->start();
+        $writer->start();
 
         $headers = $reader->readHeaders();
 
@@ -136,16 +138,18 @@ class Converter
     {
         foreach ($headers as $index => $field){
 
-            $value = $row[$index];
+            if (isset($this->filters[$field])) {
+                $value = $row[$index];
 
-            /**
-             * @var FilterInterface[] $filters
-             */
-            $filters = $this->filters[$field] ?? [];
+                /**
+                 * @var FilterInterface[] $filters
+                 */
+                $filters = $this->filters[$field];
 
-            foreach ($filters as $filter) {
-                if (!$filter->allow($value)){
-                    return false;
+                foreach ($filters as $filter) {
+                    if (!$filter->allow($value)){
+                        return false;
+                    }
                 }
             }
         }
